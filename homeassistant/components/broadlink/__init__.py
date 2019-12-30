@@ -75,7 +75,7 @@ def async_setup_service(hass, host, device):
             device = hass.data[DOMAIN][call.data[CONF_HOST]]
 
             try:
-                auth = await hass.async_add_executor_job(device.auth)
+                auth = device.auth
             except socket.timeout:
                 _LOGGER.error("Failed to connect to device, timeout")
                 return
