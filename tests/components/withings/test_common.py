@@ -1,5 +1,6 @@
 """Tests for the Withings component."""
 from datetime import timedelta
+from unittest.mock import patch
 
 from asynctest import MagicMock
 import pytest
@@ -10,8 +11,6 @@ from homeassistant.components.withings.common import (
     NotAuthenticatedError,
     WithingsDataManager,
 )
-from homeassistant.config import async_process_ha_core_config
-from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import PlatformNotReady
 from homeassistant.util import dt
 
@@ -111,24 +110,26 @@ async def test_data_manager_call_throttle_disabled(
 
 
 async def test_data_manager_update_sleep_date_range(
-    hass: HomeAssistant, data_manager: WithingsDataManager,
+    data_manager: WithingsDataManager,
 ) -> None:
     """Test method."""
-    await async_process_ha_core_config(
-        hass=hass, config={"time_zone": "America/Los_Angeles"}
+    patch_time_zone = patch(
+        "homeassistant.util.dt.DEFAULT_TIME_ZONE",
+        new=dt.get_time_zone("America/Belize"),
     )
 
-    update_start_time = dt.now()
-    await data_manager.update_sleep()
+    with patch_time_zone:
+        update_start_time = dt.now()
+        await data_manager.update_sleep()
 
-    call_args = data_manager.api.sleep_get.call_args_list[0][1]
-    startdate = call_args.get("startdate")
-    enddate = call_args.get("enddate")
+        call_args = data_manager.api.sleep_get.call_args_list[0][1]
+        startdate = call_args.get("startdate")
+        enddate = call_args.get("enddate")
 
-    assert startdate.tzname() == "PST"
+        assert startdate.tzname() == "CST"
 
-    assert enddate.tzname() == "PST"
-    assert startdate.tzname() == "PST"
-    assert update_start_time < enddate
-    assert enddate < update_start_time + timedelta(seconds=1)
-    assert enddate > startdate
+        assert enddate.tzname() == "CST"
+        assert startdate.tzname() == "CST"
+        assert update_start_time < enddate
+        assert enddate < update_start_time + timedelta(seconds=1)
+        assert enddate > startdate

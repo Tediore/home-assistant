@@ -20,7 +20,7 @@ from tests.components.automation import common
 
 @pytest.fixture
 def calls(hass):
-    """Track calls to a mock serivce."""
+    """Track calls to a mock service."""
     return async_mock_service(hass, "test", "automation")
 
 
@@ -515,6 +515,28 @@ async def test_if_fires_on_entity_change_with_for(hass, calls):
     hass.states.async_set("test.entity", "world")
     await hass.async_block_till_done()
     async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=10))
+    await hass.async_block_till_done()
+    assert 1 == len(calls)
+
+
+async def test_if_fires_on_entity_removal(hass, calls):
+    """Test for firing on entity removal, when new_state is None."""
+    hass.states.async_set("test.entity", "hello")
+    await hass.async_block_till_done()
+
+    assert await async_setup_component(
+        hass,
+        automation.DOMAIN,
+        {
+            automation.DOMAIN: {
+                "trigger": {"platform": "state", "entity_id": "test.entity"},
+                "action": {"service": "test.automation"},
+            }
+        },
+    )
+    await hass.async_block_till_done()
+
+    assert hass.states.async_remove("test.entity")
     await hass.async_block_till_done()
     assert 1 == len(calls)
 

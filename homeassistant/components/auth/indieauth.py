@@ -33,8 +33,8 @@ async def verify_redirect_uri(hass, client_id, redirect_uri):
     # Whitelist the iOS and Android callbacks so that people can link apps
     # without being connected to the internet.
     if redirect_uri == "homeassistant://auth-callback" and client_id in (
-        "https://home-assistant.io/android",
-        "https://home-assistant.io/iOS",
+        "https://www.home-assistant.io/android",
+        "https://www.home-assistant.io/iOS",
     ):
         return True
 
@@ -99,7 +99,7 @@ async def fetch_redirect_uris(hass, url):
         pass
     except aiohttp.client_exceptions.ClientConnectionError:
         _LOGGER.error(
-            ("Low level connection error while looking up " "redirect_uri %s"), url
+            "Low level connection error while looking up redirect_uri %s", url
         )
         pass
     except aiohttp.client_exceptions.ClientError:
